@@ -3,8 +3,7 @@ import numpy as np
 import sklearn
 import matplotlib.pyplot as plt
 
-#from activation_functions import *
-#import activation_functions as activation
+from activation_utils import *
 
 # ====================== Initialize Parameters =======================
 
@@ -147,9 +146,11 @@ def compute_cost(AL, Y):
     """
     
     m = Y.shape[1]
+    epsilon = 1e-5  #added to avoid inifnity in log at x = 0 => results in divide by zero error
+    epsilon *= np.ones(AL.shape)
 
     # Compute loss from aL and y.
-    cost =  (-1./m) * np.sum(np.multiply(np.log(AL),Y) + np.multiply(np.log(1-AL),1-Y))
+    cost =  (-1./m) * np.sum(np.multiply(np.log(AL+epsilon),Y) + np.multiply(np.log(1-AL+epsilon),1-Y))
     
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     assert(cost.shape == ())
@@ -247,6 +248,7 @@ def L_model_backward(AL, Y, caches, activation_functions):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
     
     # Initializing the backpropagation
+    # derivative of cross entropy
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
     
     # Lth layer (SIGMOID -> LINEAR) gradients.
@@ -370,118 +372,4 @@ def predict(parameters, X, activation_functions):
     
     return predictions
 
-
-# ====================== Activation Functions =======================
-
-def sigmoid(Z):
-    """
-    Implements the sigmoid activation in numpy
-    
-    Arguments:
-    Z -- numpy array of any shape
-    
-    Returns:
-    A -- output of sigmoid(z), same shape as Z
-    cache -- returns Z as well, useful during backpropagation
-    """
-    
-    A = 1/(1+np.exp(-Z))
-    cache = Z
-    
-    return A, cache
-
-def relu(Z):
-    """
-    Implement the RELU function.
-
-    Arguments:
-    Z -- Output of the linear layer, of any shape
-
-    Returns:
-    A -- Post-activation parameter, of the same shape as Z
-    cache -- a python dictionary containing "A" ; stored for computing the backward pass efficiently
-    """
-    
-    A = np.maximum(0,Z)
-    
-    assert(A.shape == Z.shape)
-    
-    cache = Z 
-    return A, cache
-
-def tanh(Z):
-    """
-    Implements the tanh activation in numpy
-    
-    Arguments:
-    Z -- numpy array of any shape
-    
-    Returns:
-    A -- output of tanh(z), same shape as Z
-    cache -- returns Z as well, useful during backpropagation
-    """
-    
-    A = (np.exp(Z) - np.exp(-Z)) / (np.exp(Z) + np.exp(-Z))
-    cache = Z
-    
-    return A, cache
-  
-def relu_backward(dA, Z):
-    """
-    Implement the backward propagation for a single RELU unit.
-
-    Arguments:
-    dA -- post-activation gradient, of any shape
-    cache -- 'Z' where we store for computing backward propagation efficiently
-
-    Returns:
-    dZ -- Gradient of the cost with respect to Z
-    """
-    
-    dZ = np.array(dA, copy=True) # just converting dz to a correct object.
-    
-    # When z <= 0, you should set dz to 0 as well. 
-    dZ[Z <= 0] = 0
-    
-    assert (dZ.shape == Z.shape)
-    
-    return dZ
-
-def sigmoid_backward(dA, Z):
-    """
-    Implement the backward propagation for a single SIGMOID unit.
-
-    Arguments:
-    dA -- post-activation gradient, of any shape
-    cache -- 'Z' where we store for computing backward propagation efficiently
-
-    Returns:
-    dZ -- Gradient of the cost with respect to Z
-    """
-    
-    s = 1/(1+np.exp(-Z))
-    dZ = dA * s * (1-s)
-    
-    assert (dZ.shape == Z.shape)
-    
-    return dZ
-  
-def tanh_backward(dA, Z):
-    """
-    Implement the backward propagation for a single TANH unit.
-
-    Arguments:
-    dA -- post-activation gradient, of any shape
-    cache -- 'Z' where we store for computing backward propagation efficiently
-
-    Returns:
-    dZ -- Gradient of the cost with respect to Z
-    """
-
-    s = (np.exp(Z) - np.exp(-Z)) / (np.exp(Z) + np.exp(-Z))
-    dZ = dA * (1 - s * s)
-
-    assert (dZ.shape == Z.shape)
-
-    return dZ
 
