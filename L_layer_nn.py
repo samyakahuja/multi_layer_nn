@@ -363,9 +363,10 @@ def predict(parameters, X, activation_functions):
     predictions -- vector of predictions of our model
     """
     
-    # Computes probabilities using forward propagation, and classifies to 0/1 using 0.5 as the threshold.
+    # Computes probabilities using forward propagation, and classifies to the
+    # output unit that has maximum activation using the final layer output.
     AL, caches = L_model_forward(X,parameters,activation_functions)
-    predictions = 1 * (AL > 0.5)
+    predictions = np.argmax(AL, axis = 0) + 1
     
     return predictions
 
